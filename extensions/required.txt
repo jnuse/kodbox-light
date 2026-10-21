@@ -2,3 +2,4 @@
 gd
 zip
 pdo_sqlite
+opcache

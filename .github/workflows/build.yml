@@ -48,7 +48,8 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/') }}
+            type=raw,value=latest,enable=${{ matrix.suffix == '' && startsWith(github.ref, 'refs/tags/') }}
+            type=raw,value=latest-required,enable=${{ matrix.suffix == '-required' && startsWith(github.ref, 'refs/tags/') }}
             type=semver,pattern={{version}}
             type=semver,pattern=v{{version}}
             type=sha,prefix=sha-
