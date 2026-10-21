@@ -316,8 +316,8 @@ PHP 版本是构建参数，不是镜像变体。想试 PHP 8.4：
 
 1. 进入 GitHub 仓库的 **Actions → Build and Push → Run workflow**。
 2. `php_version` 填 `8.4`。
-3. 运行完成后，GHCR 上会出现 `8.4` 和 `8.4-required` 两个新 tag。
-4. 在 `compose.yaml` 里把 image 改成 `:8.4` 或 `:8.4-required`，`podman-compose up -d`。
+3. 运行完成后，GHCR 上会出现 `sha-xxxxxxx` 和 `sha-xxxxxxx-required` 两个新 tag（在 package 的 tags 列表里找）。
+4. 在 `compose.yaml` 里把 image 改成对应的 sha tag，`podman-compose up -d`。
 
 `latest` 和 `latest-required` 不会被覆盖，实验失败随时切回。
 
