@@ -141,23 +141,13 @@ services:
 
 `/srv/kodbox` 换成你实际的源码路径。
 
-### 2. 登录 GHCR
-
-私有镜像需要先登录才能拉取：
-
-```bash
-echo <你的_GitHub_PAT> | docker login ghcr.io -u <你的_GitHub_用户名> --password-stdin
-```
-
-PAT 只需要 `read:packages` 权限。公开镜像可跳过这一节。
-
-### 3. 启动
+### 2. 启动
 
 ```bash
 docker compose up -d
 ```
 
-### 4. 确认启动成功
+### 3. 确认启动成功
 
 ```bash
 docker compose ps
