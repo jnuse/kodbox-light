@@ -22,7 +22,7 @@ RUN set -eux; \
 # ---------- 运行 ----------
 FROM php:${PHP_VERSION}-fpm-alpine AS runtime
 
-RUN apk add --no-cache nginx \
+RUN apk add --no-cache nginx tzdata \
     libpng libjpeg-turbo freetype \
     libzip sqlite-libs icu-libs
 
