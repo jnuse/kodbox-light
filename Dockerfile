@@ -45,7 +45,6 @@ RUN chmod +x /usr/local/bin/entrypoint.sh
 
 RUN set -eux; \
     sed -i \
-        -e 's|^listen = 9000|listen = /run/php-fpm.sock|' \
         -e 's|^;listen.owner = .*|listen.owner = www-data|' \
         -e 's|^;listen.group = .*|listen.group = www-data|' \
         -e 's|^;listen.mode = .*|listen.mode = 0660|' \
@@ -56,6 +55,7 @@ RUN set -eux; \
         -e 's|^pm.max_spare_servers = .*|pm.max_spare_servers = 2|' \
         -e 's|^;pm.max_requests = .*|pm.max_requests = 500|' \
         /usr/local/etc/php-fpm.d/www.conf; \
+    printf '[www]\nlisten = /run/php-fpm.sock\n' > /usr/local/etc/php-fpm.d/zz-local.conf; \
     mkdir -p /run /var/www/html; \
     chown -R www-data:www-data /run
 
