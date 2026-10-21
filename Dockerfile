@@ -24,7 +24,7 @@ FROM php:${PHP_VERSION}-fpm-alpine AS runtime
 
 RUN apk add --no-cache nginx tzdata \
     libpng libjpeg-turbo freetype \
-    libzip sqlite-libs icu-libs
+    libzip sqlite-libs icu-libs icu-data-full
 
 COPY --from=builder /usr/local/lib/php/extensions/ /usr/local/lib/php/extensions/
 COPY --from=builder /tmp/extensions.txt /tmp/extensions.txt
@@ -33,7 +33,9 @@ RUN set -eux; \
     for ext in $(grep -v '^#' /tmp/extensions.txt); do \
         docker-php-ext-enable "$ext"; \
     done; \
-    rm /tmp/extensions.txt
+    rm /tmp/extensions.txt; \
+    php -m; \
+    php -m | grep -qx mbstring
 
 COPY php.ini /usr/local/etc/php/conf.d/php.ini
 COPY opcache.ini /usr/local/etc/php/conf.d/opcache.ini
