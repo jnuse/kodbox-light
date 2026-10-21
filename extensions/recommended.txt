@@ -4,4 +4,3 @@ zip
 pdo_sqlite
 exif
 intl
-opcache
