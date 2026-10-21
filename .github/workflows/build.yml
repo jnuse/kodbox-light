@@ -48,13 +48,10 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=raw,value=latest,enable=${{ matrix.suffix == '' && startsWith(github.ref, 'refs/tags/') }}
-            type=raw,value=latest-required,enable=${{ matrix.suffix == '-required' && startsWith(github.ref, 'refs/tags/') }}
-            type=semver,pattern={{version}}
-            type=semver,pattern=v{{version}}
-            type=sha,prefix=sha-
-          flavor: |
-            suffix=${{ matrix.suffix }}
+            type=raw,value=latest${{ matrix.suffix }},enable=${{ startsWith(github.ref, 'refs/tags/') }}
+            type=semver,pattern={{version}}${{ matrix.suffix }}
+            type=semver,pattern=v{{version}}${{ matrix.suffix }}
+            type=sha,prefix=sha-,suffix=${{ matrix.suffix }}
 
       - name: Build and push
         uses: docker/build-push-action@v6
