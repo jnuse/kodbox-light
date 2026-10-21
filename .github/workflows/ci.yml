@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: read
+  actions: write
 
 jobs:
   build:
@@ -31,3 +32,16 @@ jobs:
             EXT_SET=${{ matrix.ext_set }}
           cache-from: type=gha,scope=ci-${{ matrix.ext_set }}
           cache-to: type=gha,mode=max,scope=ci-${{ matrix.ext_set }}
+
+      - name: Prune old runs (keep 3)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ids=$(curl -fsSL -H "Authorization: Bearer $GH_TOKEN" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/workflows/ci.yml/runs?per_page=100" \
+            | jq -r '.workflow_runs[].id' | tail -n +4)
+          for id in $ids; do
+            curl -fsSL -X DELETE -H "Authorization: Bearer $GH_TOKEN" \
+              "https://api.github.com/repos/${{ github.repository }}/actions/runs/$id"
+            echo "deleted run $id"
+          done
