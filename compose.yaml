@@ -1,0 +1,13 @@
+services:
+  kodbox:
+    image: ghcr.io/jnuse/kodbox-light:latest
+    container_name: kodbox
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      # 宿主机 Kodbox 源码目录，部署前需 chown -R 82:82
+      - /path/to/kodbox:/var/www/html
+    environment:
+      TZ: Asia/Shanghai
+    mem_limit: 256m

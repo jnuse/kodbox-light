@@ -1,0 +1,6 @@
+# required + 建议扩展
+gd
+zip
+pdo_sqlite
+exif
+intl

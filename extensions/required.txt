@@ -1,0 +1,4 @@
+# Kodbox 必需，且官方 php:fpm-alpine 镜像未默认编译的扩展
+gd
+zip
+pdo_sqlite
