@@ -68,8 +68,8 @@ cd /srv/kodbox
 去官方下载页获取最新版：
 
 ```bash
-# 以 1.62 为例，版本号请替换为实际最新版
-curl -fSL -o kodbox.zip https://static.kodcloud.com/update/download/kodbox.1.62.zip
+# 以 1.70 为例，版本号请替换为实际最新版
+curl -fSL -o kodbox.zip https://static.kodcloud.com/update/download/kodbox.1.70.zip
 unzip kodbox.zip
 rm kodbox.zip
 ```
@@ -145,13 +145,13 @@ services:
 
 ### 2. 登录 GHCR
 
-GHCR 上的镜像默认私有，需要先登录：
+私有镜像需要先登录才能拉取：
 
 ```bash
 echo <你的_GitHub_PAT> | podman login ghcr.io -u <你的_GitHub_用户名> --password-stdin
 ```
 
-PAT 只需要 `read:packages` 权限。如果镜像已设为公开，可跳过这一步。
+PAT 只需要 `read:packages` 权限。公开镜像可跳过这一节。
 
 ### 3. 启动
 
