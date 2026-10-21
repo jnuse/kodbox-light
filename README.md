@@ -12,11 +12,9 @@
 4. [部署](#部署)
 5. [首次安装](#首次安装)
 6. [后台建议配置](#后台建议配置)
-7. [升级 Kodbox](#升级-kodbox)
-8. [升级镜像](#升级镜像)
-9. [切换扩展集](#切换扩展集)
-10. [实验 PHP 版本](#实验-php-版本)
-11. [故障排查](#故障排查)
+7. [升级镜像](#升级镜像)
+8. [切换扩展集](#切换扩展集)
+9. [故障排查](#故障排查)
 
 ---
 
@@ -38,14 +36,14 @@
 
 ## 前置条件
 
-- 已安装 Podman 和 podman-compose。
+- 已安装 Docker 和 docker compose。
 - 宿主机上有约 1GB 空闲磁盘用于 Kodbox 源码和文件存储。
 - 能访问 `ghcr.io`（拉取镜像）。
 
-确认 podman-compose 可用：
+确认 docker compose 可用：
 
 ```bash
-podman-compose version
+docker compose version
 ```
 
 ---
@@ -148,7 +146,7 @@ services:
 私有镜像需要先登录才能拉取：
 
 ```bash
-echo <你的_GitHub_PAT> | podman login ghcr.io -u <你的_GitHub_用户名> --password-stdin
+echo <你的_GitHub_PAT> | docker login ghcr.io -u <你的_GitHub_用户名> --password-stdin
 ```
 
 PAT 只需要 `read:packages` 权限。公开镜像可跳过这一节。
@@ -156,13 +154,13 @@ PAT 只需要 `read:packages` 权限。公开镜像可跳过这一节。
 ### 3. 启动
 
 ```bash
-podman-compose up -d
+docker compose up -d
 ```
 
 ### 4. 确认启动成功
 
 ```bash
-podman-compose ps
+docker compose ps
 ```
 
 应看到 `kodbox` 状态为 `Up`。
@@ -170,7 +168,7 @@ podman-compose ps
 查看日志：
 
 ```bash
-podman-compose logs -f kodbox
+docker compose logs -f kodbox
 ```
 
 正常日志中会看到 Nginx 启动信息和 PHP-FPM 的 `ready to handle connections`。
@@ -210,68 +208,9 @@ Kodbox source must be mounted at /var/www/html.
 
 分片大小必须小于 Nginx 的 `client_max_body_size`（本镜像设为 2048M）和 PHP 的 `post_max_size`（设为 512M）。5M 远小于这两个值，安全。
 
-### 安全
-
-**系统设置 → 安全设置**
-
-- 开启 **登录验证码**。
-
 ### HTTPS
 
 本镜像只监听 HTTP。如果你需要 HTTPS，在 Kodbox 容器前面再加一层反向代理（Nginx、Caddy、Traefik 均可），由它负责 TLS 终止，把请求转发到 `kodbox:80`。
-
----
-
-## 升级 Kodbox
-
-Kodbox 升级 = 替换宿主机 `/srv/kodbox` 下的源码文件，**保留 `data/` 和 `config/`**。
-
-### 1. 备份
-
-```bash
-cp -a /srv/kodbox/data /srv/kodbox-data-backup
-cp -a /srv/kodbox/config /srv/kodbox-config-backup
-```
-
-### 2. 下载新版并解压到临时目录
-
-```bash
-cd /tmp
-curl -fSL -o kodbox-new.zip https://static.kodcloud.com/update/download/kodbox.<新版本>.zip
-mkdir kodbox-new
-unzip -q kodbox-new.zip -d kodbox-new
-```
-
-### 3. 替换源码，保留 data 和 config
-
-```bash
-# 删除旧源码（保留 data 和 config）
-find /srv/kodbox -mindepth 1 -maxdepth 1 ! -name data ! -name config -exec rm -rf {} +
-
-# 复制新源码
-cp -a /tmp/kodbox-new/* /srv/kodbox/
-cp -a /tmp/kodbox-new/.[!.]* /srv/kodbox/ 2>/dev/null || true
-
-# 修正所有者
-chown -R 82:82 /srv/kodbox
-
-# 清理
-rm -rf /tmp/kodbox-new /tmp/kodbox-new.zip
-```
-
-### 4. 等待生效
-
-镜像内 OPcache 开启了时间戳检查（`opcache.validate_timestamps=1`，`revalidate_freq=2`），源码替换后 **2 秒内自动生效**，不需要重启容器。
-
-如果发现页面仍是旧版，强制重启一次：
-
-```bash
-podman-compose restart kodbox
-```
-
-### 5. 访问后台确认
-
-登录 Kodbox，**系统设置 → 关于** 查看版本号是否已更新。
 
 ---
 
@@ -280,11 +219,11 @@ podman-compose restart kodbox
 镜像本身（PHP 版本、扩展、Nginx 配置）更新时：
 
 ```bash
-podman-compose pull
-podman-compose up -d
+docker compose pull
+docker compose up -d
 ```
 
-`podman-compose up -d` 会检测到镜像变化并重建容器。源码在宿主机上，不受影响；`data/` 和 `config/` 也在宿主机上，不受影响。
+`docker compose up -d` 会检测到镜像变化并重建容器。源码在宿主机上，不受影响；`data/` 和 `config/` 也在宿主机上，不受影响。
 
 ---
 
@@ -299,27 +238,14 @@ services:
 ```
 
 ```bash
-podman-compose up -d
+docker compose up -d
 ```
 
 反向切换同理。切换后扩展集合变化，建议重启一次容器确保干净：
 
 ```bash
-podman-compose restart kodbox
+docker compose restart kodbox
 ```
-
----
-
-## 实验 PHP 版本
-
-PHP 版本是构建参数，不是镜像变体。想试 PHP 8.4：
-
-1. 进入 GitHub 仓库的 **Actions → Build and Push → Run workflow**。
-2. `php_version` 填 `8.4`。
-3. 运行完成后，GHCR 上会出现 `sha-xxxxxxx` 和 `sha-xxxxxxx-required` 两个新 tag（在 package 的 tags 列表里找）。
-4. 在 `compose.yaml` 里把 image 改成对应的 sha tag，`podman-compose up -d`。
-
-`latest` 和 `latest-required` 不会被覆盖，实验失败随时切回。
 
 ---
 
@@ -350,13 +276,13 @@ chown -R 82:82 /srv/kodbox
 PHP-FPM 没起来或 socket 不通。查看日志：
 
 ```bash
-podman-compose logs kodbox | grep -i fpm
+docker compose logs kodbox | grep -i fpm
 ```
 
 常见原因是 `/run` 目录权限异常。重启容器通常能恢复：
 
 ```bash
-podman-compose restart kodbox
+docker compose restart kodbox
 ```
 
 ### 上传大文件失败
@@ -372,7 +298,7 @@ podman-compose restart kodbox
 ### 容器因 OOM 被杀
 
 ```bash
-podman events --filter container=kodbox --filter event=oom
+docker events --filter container=kodbox --filter event=oom
 ```
 
 有输出说明内存不够。处理方式：
@@ -403,7 +329,7 @@ podman events --filter container=kodbox --filter event=oom
 ### 确认容器内存限制生效
 
 ```bash
-podman stats kodbox --no-stream
+docker stats kodbox --no-stream
 ```
 
-`MEM LIMIT` 列应显示 `256MB` 左右。如果显示的是宿主机总内存，说明 `mem_limit` 没生效（Podman rootless 模式下某些版本会忽略），需要手动在 `podman run` 或 systemd 单元里加 `--memory=256m`。
+`MEM LIMIT` 列应显示 `256MB` 左右。如果显示的是宿主机总内存，检查 compose 文件中的 `mem_limit` 字段是否被正确加载。
